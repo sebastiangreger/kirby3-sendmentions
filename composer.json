@@ -1,0 +1,21 @@
+{
+    "name": "sgkirby/sendmentions",
+    "description": "Send webmentions and pingbacks to URLs in content",
+    "version": "0.1.0",
+    "type": "kirby-plugin",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sebastian Greger",
+            "email": "msg@sebastiangreger.net"
+        }
+    ],
+    "keywords": [
+        "kirby3",
+        "kirby3-cms",
+        "kirby3-plugin"
+    ],
+    "require": {
+        "getkirby/composer-installer": "^1.1"
+    }
+}
