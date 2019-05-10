@@ -16,7 +16,7 @@ return [
 	
 		'pings' => function () {
 			
-			$logfile = $this->model()->root() . DS . 'sendmentions.json';
+			$logfile = $this->model()->root() . DS . '.sendmentions.json';
 			
 			if( file_exists( $logfile ) ) {
 				

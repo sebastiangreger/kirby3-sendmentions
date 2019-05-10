@@ -15,7 +15,7 @@ class SendMentions {
     public static function loadLog( $newPage ) {
 		
 		// load the array of pings sent earlier
-		static::$logfile = $newPage->root() . DS . 'sendmentions.json';
+		static::$logfile = $newPage->root() . DS . '.sendmentions.json';
 		if ( F::exists( static::$logfile ) )
 			return Data::read( static::$logfile, 'json' );
 		else
