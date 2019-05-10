@@ -8,7 +8,7 @@ Most websites that receive webmentions will not only verify the link, but parse 
 
 For details about the approach and philosophy of this plugin, visit https://sebastiangreger.net/2019/05/sendmention-commention-webmentions-for-kirby-3
 
-*NB. Plugin functionality only covers outgoing webmentions (notifying websites linked in content). Receiving webmentions from other sites and displaying them in page templates requires a separate solution, such as [Kirby 3 Commentions](https://github.com/sebastiangreger/kirby3-commmentions).*
+*NB. Plugin functionality only covers outgoing webmentions (notifying websites linked in content). Receiving webmentions from other sites and displaying them in page templates requires a separate solution, such as [Kirby 3 Commentions](https://github.com/sebastiangreger/kirby3-commentions).*
 
 ## Installation
 
