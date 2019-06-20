@@ -22,6 +22,6 @@ load([
         'pings' => require __DIR__ . '/sections/pings.php'
     ],
 
-    'hooks'       => require 'config/hooks.php',
+    'hooks'       => require  __DIR__ . '/config/hooks.php',
 
 ]);
