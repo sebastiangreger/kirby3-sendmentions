@@ -15,6 +15,11 @@
         "kirby3-cms",
         "kirby3-plugin"
     ],
+    "autoload": {
+        "files": [
+            "src/SendMentions.php"
+        ]
+    },
     "require": {
         "getkirby/composer-installer": "^1.1"
     }
