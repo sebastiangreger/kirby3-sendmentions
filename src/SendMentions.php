@@ -14,8 +14,13 @@ class SendMentions {
 
     public static function loadLog( $newPage ) {
 		
+		// set the log file location for regular and virtual pages
+		if ( is_dir( $newPage->root() ) )
+			static::$logfile = $newPage->root() . DS . '.sendmentions.json';
+		else
+			static::$logfile = $newPage->parent()->root() . DS . '.sendmentions-' . $newPage->slug() . '.json';
+
 		// load the array of pings sent earlier
-		static::$logfile = $newPage->root() . DS . '.sendmentions.json';
 		if ( F::exists( static::$logfile ) )
 			return Data::read( static::$logfile, 'json' );
 		else
@@ -103,7 +108,7 @@ class SendMentions {
 		
 	}
 
-    public static function send( $newPage, $oldPage ) {
+    public static function send( $newPage, $oldPage = null ) {
 
 		// do not send webmentions, unless page has been published
 		if ( $newPage->status() != 'listed' )

@@ -28,6 +28,12 @@ sections:
 
 By default, webmentions are sent for all pages as they are published. You may want to fine tune your setup using the available options below.
 
+If virtual pages are not created through the Kirby panel (e.g. virtual pages generated from a database or CSV file), the sending of webmentions needs to be triggered separately:
+
+```php
+sgkirby\SendMentions\SendMentions::send( $page );
+```
+
 ## Options
 
 The plugin can be configured in your `site/config/config.php`:
