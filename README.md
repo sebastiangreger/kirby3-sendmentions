@@ -1,16 +1,24 @@
 # Kirby 3 Sendmentions
 
-⚠️ This is work in progress, created for my personal use; at this stage use with caution, but feel invited to comment, contribute or build upon!
-
-The plugin attempts to send [Webmentions](https://www.w3.org/TR/webmention/) to all URLs linked from a page's content when it is saved with status "listed". This notifies the receiving site that they have been linked to, and allows them to display these, if desired. If the target site does not provide a webmention endpoint, sending a pingback is attempted instead. As an option, the plugin can also request all linked pages to be archived on archive.org (option disabled by default; see "Setup" below).
+The plugin attempts to send [Webmentions](https://www.w3.org/TR/webmention/) to all URLs linked from a page's content when it is saved with status "listed". This notifies the receiving sites that they have been linked to, and allows them to display these, if desired. If the target site does not provide a webmention endpoint, sending a pingback is attempted instead. As an option, the plugin can also request all linked pages to be archived on archive.org (option disabled by default; see [Options](#saving-linked-pages-to-archiveorg) below).
 
 Most websites that receive webmentions will not only verify the link, but parse the source page in order to determine post title, author info etc. Therefore, using the appropriate microformat markup - [h-entry](https://indieweb.org/h-entry) for blog posts - in your templates is strongly recommended.
 
-For details about the approach and philosophy of this plugin, visit https://sebastiangreger.net/2019/05/sendmention-commention-webmentions-for-kirby-3
-
-*NB. Plugin functionality only covers outgoing webmentions (notifying websites linked in content). Receiving webmentions from other sites and displaying them in page templates requires a separate solution, such as [Kirby 3 Commentions](https://github.com/sebastiangreger/kirby3-commentions).*
+*NB. This plugin only covers outgoing webmentions (notifying other websites linked in your content). Receiving webmentions from other sites and displaying them in page templates requires a separate solution, such as [Kirby 3 Commentions](https://github.com/sebastiangreger/kirby3-commentions).*
 
 ## Installation
+
+### Composer
+
+```bash
+composer require sgkirby/sendmentions
+```
+
+### Git submodule
+
+```bash
+git submodule add https://github.com/sebastiangreger/kirby3-sendmentions.git site/plugins/kirby3-sendmentions
+```
 
 ### Download
 
