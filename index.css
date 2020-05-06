@@ -1,3 +1,1 @@
-.k-sendmentions-section > .k-box {
-  margin-bottom: 1.5rem;
-}
+.k-list-item-sendmentions-sent .k-list-item-image .k-icon svg *{fill:green}.k-list-item-sendmentions-failed .k-list-item-image .k-icon svg *{fill:red}.k-sendmentions-section .k-list-item-text small{text-transform:capitalize}.k-sendmentions-section>.k-box{margin-bottom:1.5rem}
