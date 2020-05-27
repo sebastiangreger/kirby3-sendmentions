@@ -19,6 +19,11 @@ load([
 
 \Kirby::plugin('sgkirby/sendmentions', [
 
+    'options' => [
+        'pingOnPublish'       => false,
+        'pingOnUpdate'        => false,
+    ],
+
     'api' => require __DIR__ . '/config/api.php',
 
     'sections' => [

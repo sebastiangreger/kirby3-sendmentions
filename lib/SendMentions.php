@@ -21,7 +21,7 @@ class SendMentions {
         $target = $pingdata['target'];
 
         // empty the log file and start with the source URL
-        static::log('>>> ' . $source, false);
+        static::logger('>>> ' . $source, false);
 
         if ($pingdata['type'] === 'archive.org') {
             static::pingArchive($target);
@@ -45,8 +45,18 @@ class SendMentions {
             return;
         }
 
+        // do not send webmentions, unless "pings on update" are active
+        if ($newPage->status() == $oldPage->status() && !pageSettings($newPage, 'pingOnUpdate')) {
+            return;
+        }
+
+        // do not send webmentions, unless "pings on publish" are active
+        if ($newPage->status() != $oldPage->status() && !pageSettings($newPage, 'pingOnPublish')) {
+            return;
+        }
+
         // if an array of applicable templates is given, only proceed for selected templates
-        if (option('sgkirby.sendmentions.templates', []) != [] && ! in_array($newPage->template()->name(), option('sgkirby.sendmentions.templates', []))) {
+        if (option('sgkirby.sendmentions.templates', []) != [] && ! in_array($newPage->intendedTemplate()->name(), option('sgkirby.sendmentions.templates', []))) {
             return;
         }
 
@@ -56,33 +66,33 @@ class SendMentions {
         $source = $newPage->url();
 
         // empty the log file and start with the source URL
-        static::log('>>> ' . $source, false);
+        static::logger('>>> ' . $source, false);
 
         // loop through all URLs in the post content
         foreach (static::parseUrls($newPage) as $target) {
 
             // do not process invalid URL
             if (! V::url($target)) {
-                static::log('Not a valild URL: ' . $target);
+                static::logger('Not a valild URL: ' . $target);
                 continue;
             }
 
             // do not process same-site URLs
             $sourceDomain = parse_url($source, PHP_URL_HOST);
             if (strpos($target, $sourceDomain) !== false) {
-                static::log('Same-site URL: ' . $target);
+                static::logger('Same-site URL: ' . $target);
                 continue;
             }
 
             // do not process URLs already pinged before
             if (isset(static::$log[ $target ])) {
-                static::log('URL already pinged earlier: ' . $target);
+                static::logger('URL already pinged earlier: ' . $target);
                 continue;
             }
 
             // do not process URLs already processed in this run
             if (in_array($target, static::$triggered)) {
-                static::log('URL duplicate within page: ' . $target);
+                static::logger('URL duplicate within page: ' . $target);
                 continue;
             }
 
@@ -138,7 +148,7 @@ class SendMentions {
                 'endpoint' => $endpoint,
                 'response' => $response['code'],
             ]);
-            static::log('Webmention sent: ' . $target . ' (' . $response['code'] . ';' . $endpoint . ')');
+            static::logger('Webmention sent: ' . $target . ' (' . $response['code'] . ';' . $endpoint . ')');
         }
         // as a fallback, try to send a pingback
         elseif ( $response = $client->sendPingback( $source, $target ) ) {
@@ -146,14 +156,14 @@ class SendMentions {
 			static::updateLog ( $target, 'mention', [
                 'type' => 'pingback',
             ]);
-            static::log('Pingback sent: ' . $target);
+            static::logger('Pingback sent: ' . $target);
         }
         else {
 
 			static::updateLog ( $target, 'mention', [
                 'type' => 'none',
             ]);
-            static::log('No endpoint found: ' . $target);
+            static::logger('No endpoint found: ' . $target);
 
         }
 
@@ -182,7 +192,7 @@ class SendMentions {
 			]);
 
         }
-        static::log('Saved to archive.org: ' . $target);
+        static::logger('Saved to archive.org: ' . $target);
 
 	}
 
@@ -194,6 +204,25 @@ class SendMentions {
         } else {
             return [];
         }
+    }
+
+    public static function pageSettings($page, string $key = null)
+    {
+        $stored = Storage::read($page, 'pagesettings');
+        $defaults = [
+            'pingOnPublish' => option('sgkirby.sendmentions.pingOnPublish'),
+            'pingOnUpdate' => option('sgkirby.sendmentions.pingOnUpdate'),
+        ];
+        foreach($defaults as $k => $v) {
+            $settings[$k] = $stored[$k] ?? $v;
+        }
+
+        // if a specific key is given, return the value for that key
+        if ($key !== null) {
+            return $settings[$key] ?? null;
+        }
+        // otherwise return associative array
+        return $settings;
     }
 
     public static function migration() {
@@ -224,7 +253,7 @@ class SendMentions {
                     $path_parts = pathinfo($jsonfile);
                     rename($jsonfile, $path_parts['dirname'] . DS . '_sendmentions' . DS . $path_parts['basename'] . '.bak');
 
-                    static::log('>>> old JSON data migrated to YAML', false);
+                    static::logger('>>> old JSON data migrated to YAML', false);
                 }
             }
         }
@@ -233,7 +262,7 @@ class SendMentions {
     /*
      * Log file writer
      */
-    public static function log($body, $append = true)
+    public static function logger($body, $append = true)
     {
         F::write(
             kirby()->root('site') . '/logs/sendmentions/sendmentions.log',

@@ -18,11 +18,10 @@
     </div>
     <nav class="k-list-item-options">
       <k-button
-        v-if="true"
-        :tooltip="$t('resend')"
-        icon="refresh"
-        :alt="Resend"
-        @click.stop="$emit('action', 'resend', item.pageid, item.target, item.type)"
+        :tooltip="$t('send')"
+        :icon="buttonicon"
+        :alt="Send"
+        @click.stop="$emit('action', 'resend', item)"
       />
     </nav>
   </li>
@@ -48,20 +47,35 @@ export default {
         return this.item.target;
     },
     itemclass() {
-      if (this.item.type == 'archive.org' || this.item.type == 'pingback' || this.item.type == 'webmention')
+      if (this.item.type == 'archive.org') {
+        return 'k-list-item-sendmentions-sent k-list-item-sendmentions-archiveorg';
+      } else if (this.item.type == 'pingback' || this.item.type == 'webmention') {
         return 'k-list-item-sendmentions-sent';
-      else
+      } else if (this.item.type == 'notsent') {
+        return 'k-list-item-sendmentions-notsent';
+      } else {
         return 'k-list-item-sendmentions-failed';
+      }
     },
     type_formatted() {
       switch (this.item.type) {
         case 'none':
-          return '';
+          return 'no endpoint';
+        case 'notsent':
+          return 'not pinged';
         case 'webmention':
-          return this.item.type + ': ' + this.item.data.response;
+          return this.item.type + ' (' + this.item.data.response + ')';
         default:
           return this.item.type;
       }
+    },
+    buttonicon() {
+      if (this.item.type === 'archive.org') {
+        return '';
+      } else if (this.item.type === 'notsent') {
+        return 'angle-right';
+      }
+      return 'refresh';
     },
     icon() {
       switch (this.item.type) {
@@ -77,22 +91,14 @@ export default {
             return 'circle-outline';
       }
     },
-    options() {
-      return [
-        {
-          icon: 'refresh',
-          text: 'Resend',
-          click: 'resend',
-        },
-      ]
-    },
   },
 
 };
 </script>
 
 <style lang="scss">
-.k-list-item-sendmentions-sent .k-list-item-image .k-icon svg * { fill:green; }
-.k-list-item-sendmentions-failed .k-list-item-image .k-icon svg * { fill:red; }
-.k-sendmentions-section .k-list-item-text small { text-transform: capitalize; }
+.k-list-item-sendmentions-sent .k-list-item-image .k-icon svg * { fill:#5d800d; }
+.k-list-item-sendmentions-notsent .k-list-item-image .k-icon svg * { fill:#f5871f; }
+.k-list-item-sendmentions-failed .k-list-item-image .k-icon svg * { fill:#c82829; }
+.k-list-item-sendmentions-archiveorg .k-list-item-text small { margin-right:1rem; }
 </style>

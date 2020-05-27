@@ -8,7 +8,7 @@ return [
 
 	'props' => [
 
-		'headline' => function ($message = "Pings sent") {
+		'headline' => function ($message = "Pings") {
 			return $message;
 		},
 
@@ -31,39 +31,65 @@ return [
             return [];
         },
 
+        'pageId' => function () {
+            return $this->model()->id();
+        },
+
 		'sendmentions' => function () {
 			$page = $this->model();
 			$logfile = Storage::read($page, 'sendmentions');
 
             $i = 0;
             foreach ($logfile as $url => $pings) {
-                foreach ($pings as $type => $data) {
-                    if ($type == 'mention') {
-                        if ($data['type'] == 'webmention') {
-                            $display = '<strong>Webmention (' . $data['response'] . '):</strong> ' . $url;
-                        } elseif ($data['type'] == 'pingback') {
-                            $display = '<strong>Pingback:</strong> ' . $url;
-                        } else {
-                            $display = '<strong>No endpoint:</strong> ' . $url;
-                        }
-                    } elseif ($type == 'archive.org') {
-                        $display = '<strong>Archive.org:</strong> ' . $url;
-                    } else {
-                        $display = $url;
-                    }
+                if (!is_array($pings)) {
                     $return[] = [
                         'uid' => $i,
                         'pageid' => $page->id(),
                         'target' => $url,
-                        'display' => $display,
-                        'type' => ($type === 'mention' ? $data['type'] : $type),
-                        'data' => $data,
+                        'type' => 'notsent',
+                        'data' =>  [],
                     ];
                     $i++;
+                } else {
+                    foreach ($pings as $type => $data) {
+                        $return[] = [
+                            'uid' => $i,
+                            'pageid' => $page->id(),
+                            'target' => $url,
+                            'type' => ($type === 'mention' ? $data['type'] : $type),
+                            'data' => $data,
+                        ];
+                        $i++;
+                    }
                 }
             }
 
             return $return ?? [];
+        },
+
+        'pageSettings' => function () {
+            // retrieve saved values (if exist) and loop to create the array for vue
+            $stored = SendMentions::pageSettings($this->model());
+            if ($this->model()->status() === 'listed') {
+                $action = 'update';
+            } else {
+                $action = 'publish';
+            }
+            foreach ([$action] as $k) {
+                $id = 'pingOn' . ucfirst($action);
+                $disabled = false;
+                $settings[$k] = [
+                    'id' => $id,
+                    'text' => [
+                        "Send pings on " . $action,
+                        "No pings on " . $action,
+                    ],
+                    'value' => $disabled ? false : $stored[$id],
+                    'disabled' => $disabled,
+                    'debug' => $stored,
+                ];
+            }
+            return $settings;
         },
 
 	],
