@@ -225,8 +225,8 @@ class SendMentions {
         return $settings;
     }
 
-    public static function migration() {
-
+    public static function migration()
+    {
         if (!F::exists(kirby()->root('site') . '/logs/sendmentions/sendmentions.log')) {
             // loop through all pages
             foreach (site()->index('true') as $page) {
@@ -236,6 +236,7 @@ class SendMentions {
                     $data = Data::read($jsonfile, 'json');
                     $newdata = [];
 
+                    // translate old data into new format
                     foreach ($data as $url => $pings) {
                         foreach ($pings as $type => $meta) {
                             if ($type != 'archive.org') {
@@ -248,11 +249,9 @@ class SendMentions {
                         }
                     }
 
+                    // write new yaml file and delete old json file
                     Data::write($yamlfile, $newdata, 'yml');
-
-                    $path_parts = pathinfo($jsonfile);
-                    rename($jsonfile, $path_parts['dirname'] . DS . '_sendmentions' . DS . $path_parts['basename'] . '.bak');
-
+                    unlink($jsonfile);
                     static::logger('>>> old JSON data migrated to YAML', false);
                 }
             }
