@@ -6,13 +6,19 @@ use Kirby\Data\Data;
 use Kirby\Toolkit\F;
 use Kirby\Toolkit\V;
 
-class SendMentions {
+class SendMentions
+{
+    private static $triggered = [];
+    private static $logfile = null;
+    private static $log = null;
 
-	private static $triggered = array();
-	private static $logfile = null;
-	private static $log = null;
+    public static function resend($page, $pingdata)
+    {
 
-    public static function resend( $page, $pingdata ) {
+        // do not send webmentions, unless page has been published
+        if ($page->status() != 'listed') {
+            return false;
+        }
 
         // load the array of previously sent pings
         static::$log = Storage::read($page, 'sendmentions');
@@ -24,18 +30,19 @@ class SendMentions {
         static::logger('>>> ' . $source, false);
 
         if ($pingdata['type'] === 'archive.org') {
-            static::pingArchive($target);
+            $return = static::pingArchive($target);
         } else {
-            static::sendMention($source, $target);
+            $return = static::sendMention($source, $target);
         }
 
         // save sent pings' info in pings.json
         Storage::write($page, static::$log, 'sendmentions');
 
-        return true;
+        return $return;
     }
 
-    public static function send( $newPage, $oldPage = null ) {
+    public static function send($newPage, $oldPage = null)
+    {
 
         // trigger a check whether old data has to be migrated
         static::migration();
@@ -46,12 +53,12 @@ class SendMentions {
         }
 
         // do not send webmentions, unless "pings on update" are active
-        if ($newPage->status() == $oldPage->status() && !pageSettings($newPage, 'pingOnUpdate')) {
+        if ($newPage->status() == $oldPage->status() && !static::pageSettings($newPage, 'pingOnUpdate')) {
             return;
         }
 
         // do not send webmentions, unless "pings on publish" are active
-        if ($newPage->status() != $oldPage->status() && !pageSettings($newPage, 'pingOnPublish')) {
+        if ($newPage->status() != $oldPage->status() && !static::pageSettings($newPage, 'pingOnPublish')) {
             return;
         }
 
@@ -112,70 +119,71 @@ class SendMentions {
         Storage::write($newPage, static::$log, 'sendmentions');
     }
 
-    public static function updateLog( $target, $type, $entry = [] ) {
+    public static function updateLog($target, $type, $entry = [])
+    {
 
-		// add timestamp to the data array
-		$entry['timestamp'] = time();
+        // add timestamp to the data array
+        $entry['timestamp'] = time();
 
         // store webmention response in array
         static::$log[$target][$type] = $entry;
+    }
 
-	}
+    public static function sendMention($source, $target)
+    {
 
-    public static function sendMention( $source, $target ) {
-
-		// load Indieweb MentionClient and Mf2 Parser
-        require_once( dirname(__DIR__) . DS . 'vendor' . DS . 'IndieWeb' . DS . 'MentionClient.php' );
+        // load Indieweb MentionClient and Mf2 Parser
+        require_once dirname(__DIR__) . DS . 'vendor' . DS . 'IndieWeb' . DS . 'MentionClient.php';
         if (class_exists('Mf2\\Parser') === false) {
             require_once dirname(__DIR__) . DS . 'vendor' . DS . 'Mf2' . DS . 'Parser.php';
         }
-		$client = new \IndieWeb\MentionClient();
+        $client = new \IndieWeb\MentionClient();
 
-		// check for webmention endpoint
+        // check for webmention endpoint
         if ($endpoint = $client->discoverWebmentionEndpoint($target)) {
 
             // not sending webmentions to localhost (W3C spec 4.3)
             if (strpos($endpoint, '//localhost') === true || strpos($endpoint, '//127.0.0') === true) {
-                return;
+                return false;
             }
 
             // send webmention
             $response = $client->sendWebmention($source, $target);
 
             // store webmention response in log
-            static::updateLog($target, 'mention', [
+            $data = [
                 'type' => 'webmention',
                 'endpoint' => $endpoint,
                 'response' => $response['code'],
-            ]);
+            ];
+            static::updateLog($target, 'mention', $data);
             static::logger('Webmention sent: ' . $target . ' (' . $response['code'] . ';' . $endpoint . ')');
         }
         // as a fallback, try to send a pingback
-        elseif ( $response = $client->sendPingback( $source, $target ) ) {
-			// if successful, store pingback info in log
-			static::updateLog ( $target, 'mention', [
+        elseif ($response = $client->sendPingback($source, $target)) {
+            // if successful, store pingback info in log
+            $data = [
                 'type' => 'pingback',
-            ]);
+            ];
+            static::updateLog($target, 'mention', $data);
             static::logger('Pingback sent: ' . $target);
-        }
-        else {
-
-			static::updateLog ( $target, 'mention', [
+        } else {
+            $data = [
                 'type' => 'none',
-            ]);
+            ];
+            static::updateLog($target, 'mention', $data);
             static::logger('No endpoint found: ' . $target);
-
         }
+        return $data;
+    }
 
-	}
+    public static function pingArchive($target)
+    {
+        $archiveCheckURL = 'https://web.archive.org/wayback/available?url=' . $target;
+        $archiveSubmitURL = 'https://web.archive.org/save/' . $target;
 
-    public static function pingArchive( $target ) {
-
-		$archiveCheckURL = 'https://web.archive.org/wayback/available?url=' . $target;
-		$archiveSubmitURL = 'https://web.archive.org/save/' . $target;
-
-		// if URL has been saved to archive.org within the last 24h, store that URL (no need to spam archive.org with identical copies)
-		$archiveInfo = json_decode( file_get_contents( $archiveCheckURL ), true );
+        // if URL has been saved to archive.org within the last 24h, store that URL (no need to spam archive.org with identical copies)
+        $archiveInfo = json_decode(file_get_contents($archiveCheckURL), true);
         if (array_key_exists('closest', $archiveInfo['archived_snapshots']) && time() - strtotime($archiveInfo['archived_snapshots']['closest']['timestamp']) < 86400) {
 
             // if successful, store archive URL in log
@@ -183,20 +191,19 @@ class SendMentions {
                 'url' => (string)$archiveInfo['archived_snapshots']['closest']['url'],
             ]);
 
-            // otherwise send a save request
-        } elseif ( $archiveResponse = F::read( $archiveSubmitURL ) ) {
+        // otherwise send a save request
+        } elseif ($archiveResponse = F::read($archiveSubmitURL)) {
 
-			// if successful, store archive URL in log
-			static::updateLog ( $target, 'archive.org', [
-				'url' => (string) 'https://web.archive.org' . $archiveResponse['headers']['content-location'],
-			]);
-
+            // if successful, store archive URL in log
+            static::updateLog($target, 'archive.org', [
+                'url' => (string)'https://web.archive.org' . $archiveResponse['headers']['content-location'],
+            ]);
         }
         static::logger('Saved to archive.org: ' . $target);
+    }
 
-	}
-
-    public static function parseUrls( $newPage ) {
+    public static function parseUrls($newPage)
+    {
         $regexUrlPattern = "#\b(([\w-]+://?|www[.])[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|/)))#iS";
 
         if (preg_match_all($regexUrlPattern, (string)$newPage->content()->text()->kirbytext(), $allUrlsInContent)) {
@@ -213,7 +220,7 @@ class SendMentions {
             'pingOnPublish' => option('sgkirby.sendmentions.pingOnPublish'),
             'pingOnUpdate' => option('sgkirby.sendmentions.pingOnUpdate'),
         ];
-        foreach($defaults as $k => $v) {
+        foreach ($defaults as $k => $v) {
             $settings[$k] = $stored[$k] ?? $v;
         }
 
@@ -242,8 +249,7 @@ class SendMentions {
                             if ($type != 'archive.org') {
                                 $meta['type'] = $type;
                                 $newdata[$url]['mention'] = $meta;
-                            }
-                            else {
+                            } else {
                                 $newdata[$url][$type] = $meta;
                             }
                         }
@@ -256,11 +262,9 @@ class SendMentions {
                 }
             }
         }
-	}
+    }
 
-    /*
-     * Log file writer
-     */
+    // Log file writer
     public static function logger($body, $append = true)
     {
         F::write(
@@ -269,5 +273,4 @@ class SendMentions {
             $append
         );
     }
-
 }

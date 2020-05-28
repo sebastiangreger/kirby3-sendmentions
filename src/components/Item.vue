@@ -16,12 +16,15 @@
         </span>
       </a>
     </div>
-    <nav class="k-list-item-options">
+    <nav
+      class="k-list-item-options"
+      v-if="item.type != 'archive.org'"
+    >
       <k-button
         :tooltip="$t('send')"
         :icon="buttonicon"
         :alt="Send"
-        @click.stop="$emit('action', 'resend', item)"
+        @click.stop="$emit('action', 'triggerPing', item)"
       />
     </nav>
   </li>
@@ -100,5 +103,5 @@ export default {
 .k-list-item-sendmentions-sent .k-list-item-image .k-icon svg * { fill:#5d800d; }
 .k-list-item-sendmentions-notsent .k-list-item-image .k-icon svg * { fill:#f5871f; }
 .k-list-item-sendmentions-failed .k-list-item-image .k-icon svg * { fill:#c82829; }
-.k-list-item-sendmentions-archiveorg .k-list-item-text small { margin-right:1rem; }
+.k-list-item-sendmentions-archiveorg .k-list-item-text small { margin-right:2.5rem; }
 </style>
