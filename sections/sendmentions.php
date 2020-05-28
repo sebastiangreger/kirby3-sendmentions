@@ -45,26 +45,15 @@ return [
 
             $i = 0;
             foreach ($logfile as $url => $pings) {
-                if (!is_array($pings)) {
+                foreach ($pings as $type => $data) {
                     $return[] = [
                         'uid' => $i,
                         'pageid' => $page->id(),
                         'target' => $url,
-                        'type' => 'notsent',
-                        'data' =>  [],
+                        'type' => ($type === 'mention' ? $data['type'] : $type),
+                        'data' => $data,
                     ];
                     $i++;
-                } else {
-                    foreach ($pings as $type => $data) {
-                        $return[] = [
-                            'uid' => $i,
-                            'pageid' => $page->id(),
-                            'target' => $url,
-                            'type' => ($type === 'mention' ? $data['type'] : $type),
-                            'data' => $data,
-                        ];
-                        $i++;
-                    }
                 }
             }
 

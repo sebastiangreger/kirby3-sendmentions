@@ -45,12 +45,6 @@
           </em>
           <em>
             <svg viewBox="0 0 16 16" xmlns:xlink='http://www.w3.org/1999/xlink'>
-              <use xlink:href="#icon-circle-outline"></use>
-            </svg>
-            {{ counter.notsent }}
-          </em>
-          <em>
-            <svg viewBox="0 0 16 16" xmlns:xlink='http://www.w3.org/1999/xlink'>
               <use xlink:href="#icon-sendmentions-archiveorg"></use>
             </svg>
             {{ counter.archive }}
@@ -183,7 +177,7 @@ export default {
     },
 
     output(sendmentions) {
-      var counter = {mention: 0, ping: 0, none: 0, notsent: 0, archive: 0};
+      var counter = {mention: 0, ping: 0, none: 0, archive: 0};
       Object.keys(sendmentions).forEach(function(key) {
         if(sendmentions[key].type === 'webmention') {
           counter.mention++;
@@ -193,8 +187,6 @@ export default {
           counter.none++;
         } else if(sendmentions[key].type === 'archive.org') {
           counter.archive++;
-        } else if(sendmentions[key].type === 'notsent') {
-          counter.notsent++;
         }
       });
       return counter;

@@ -54,8 +54,6 @@ export default {
         return 'k-list-item-sendmentions-sent k-list-item-sendmentions-archiveorg';
       } else if (this.item.type == 'pingback' || this.item.type == 'webmention') {
         return 'k-list-item-sendmentions-sent';
-      } else if (this.item.type == 'notsent') {
-        return 'k-list-item-sendmentions-notsent';
       } else {
         return 'k-list-item-sendmentions-failed';
       }
@@ -64,8 +62,6 @@ export default {
       switch (this.item.type) {
         case 'none':
           return 'no endpoint';
-        case 'notsent':
-          return 'not pinged';
         case 'webmention':
           return this.item.type + ' (' + this.item.data.response + ')';
         default:
@@ -75,8 +71,6 @@ export default {
     buttonicon() {
       if (this.item.type === 'archive.org') {
         return '';
-      } else if (this.item.type === 'notsent') {
-        return 'sendmentions-run';
       }
       return 'refresh';
     },
@@ -101,7 +95,6 @@ export default {
 
 <style lang="scss">
 .k-list-item-sendmentions-sent .k-list-item-image .k-icon svg * { fill:#5d800d; }
-.k-list-item-sendmentions-notsent .k-list-item-image .k-icon svg * { fill:#f5871f; }
 .k-list-item-sendmentions-failed .k-list-item-image .k-icon svg * { fill:#c82829; }
 .k-list-item-sendmentions-archiveorg .k-list-item-text small { margin-right:2.5rem; }
 </style>
