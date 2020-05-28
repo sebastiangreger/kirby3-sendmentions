@@ -76,7 +76,7 @@ export default {
       if (this.item.type === 'archive.org') {
         return '';
       } else if (this.item.type === 'notsent') {
-        return 'angle-right';
+        return 'sendmentions-run';
       }
       return 'refresh';
     },

@@ -12,9 +12,11 @@ class SendMentions
     private static $logfile = null;
     private static $log = null;
 
+    /*
+     * Resends pings to a single target
+     */
     public static function resend($page, $pingdata)
     {
-
         // do not send webmentions, unless page has been published
         if ($page->status() != 'listed') {
             return false;
@@ -41,7 +43,10 @@ class SendMentions
         return $return;
     }
 
-    public static function send($newPage, $oldPage = null)
+    /*
+     * Sends all pings for a page
+     */
+    public static function send($newPage, $oldPage = null, $force = false)
     {
 
         // trigger a check whether old data has to be migrated
@@ -49,21 +54,31 @@ class SendMentions
 
         // do not send webmentions, unless page has been published
         if ($newPage->status() != 'listed') {
+            // remove the queue if it exists
+            Storage::delete($newPage, 'sendmentionqueue');
             return;
         }
 
-        // do not send webmentions, unless "pings on update" are active
-        if ($newPage->status() == $oldPage->status() && !static::pageSettings($newPage, 'pingOnUpdate')) {
-            return;
-        }
-
-        // do not send webmentions, unless "pings on publish" are active
-        if ($newPage->status() != $oldPage->status() && !static::pageSettings($newPage, 'pingOnPublish')) {
-            return;
+        // do not send webmentions, unless "pings on publish/update" are active
+        if (
+            $oldPage != null
+            && (
+                ($newPage->status() == $oldPage->status() && !static::pageSettings($newPage, 'pingOnUpdate'))
+                || ($newPage->status() != $oldPage->status() && !static::pageSettings($newPage, 'pingOnPublish'))
+            )
+        ) {
+            // remove the queue if it exists
+            return Storage::delete($newPage, 'sendmentionqueue');
         }
 
         // if an array of applicable templates is given, only proceed for selected templates
         if (option('sgkirby.sendmentions.templates', []) != [] && ! in_array($newPage->intendedTemplate()->name(), option('sgkirby.sendmentions.templates', []))) {
+            return;
+        }
+
+        // if asynchronous mode is active, create queue job instead
+        if (!$force && strlen(option('sgkirby.sendmentions.secret')) >= 10) {
+            Storage::write($newPage, [time()], 'sendmentionqueue');
             return;
         }
 
@@ -117,6 +132,9 @@ class SendMentions
 
         // save sent pings' info in pings.json
         Storage::write($newPage, static::$log, 'sendmentions');
+
+        // delete (potentially existing) queue file when done
+        return Storage::delete($newPage, 'sendmentionqueue');
     }
 
     public static function updateLog($target, $type, $entry = [])

@@ -55,6 +55,25 @@ class Storage
     }
 
     /**
+     * Deletes a plugin data file
+     *
+     * @param \Kirby\Cms\Page $page
+     * @param string $filename The file name, without the .yml ending (commonly either 'commentions' or 'webmentionqueue')
+     * @return bool true if successful
+     */
+    public static function delete($page, string $filename)
+    {
+        // read the data and return decoded yaml
+        $file = static::file($page, $filename);
+
+        if (F::exists($file) === true) {
+            return F::remove($file);
+        }
+
+        return false;
+    }
+
+    /**
      * Get the modified date of the plugin data file
      *
      * @param \Kirby\Cms\Page $page

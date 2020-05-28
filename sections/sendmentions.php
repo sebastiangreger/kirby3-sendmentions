@@ -35,6 +35,10 @@ return [
             return $this->model()->id();
         },
 
+        'queued' => function () {
+            return F::exists($this->model()->root() . '/_sendmentions/sendmentionqueue.yml');
+        },
+
 		'sendmentions' => function () {
 			$page = $this->model();
 			$logfile = Storage::read($page, 'sendmentions');
@@ -75,13 +79,14 @@ return [
             } else {
                 $action = 'publish';
             }
+            $verb = strlen(option('sgkirby.sendmentions.secret')) >= 10 ? 'Enqueue' : 'Send';
             foreach ([$action] as $k) {
                 $id = 'pingOn' . ucfirst($action);
                 $disabled = false;
                 $settings[$k] = [
                     'id' => $id,
                     'text' => [
-                        "Send pings on " . $action,
+                        $verb . " pings on " . $action,
                         "No pings on " . $action,
                     ],
                     'value' => $disabled ? false : $stored[$id],

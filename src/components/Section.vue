@@ -22,6 +22,7 @@
     </k-box>
 
     <ul class="k-list">
+
       <li class="k-list-item" @click="details()">
         <span class="k-list-item-text k-sendmentions-section-count">
           <em>
@@ -57,14 +58,33 @@
         </span>
         <nav class="k-list-item-options">
           <button type="button" class="k-button">
-            <span aria-hidden="true" class="k-button-icon k-icon k-icon-preview">
+            <span aria-hidden="true" class="k-button-icon k-icon k-icon-cog">
               <svg viewBox="0 0 16 16" xmlns:xlink='http://www.w3.org/1999/xlink'>
-                <use xlink:href="#icon-preview"></use>
+                <use xlink:href="#icon-cog"></use>
               </svg>
             </span>
           </button>
         </nav>
       </li>
+
+      <li class="k-list-item" v-if="queued" @click="triggerQueue">
+        <span class="k-list-item-text k-sendmentions-section-queued">
+          <svg viewBox="0 0 16 16" xmlns:xlink='http://www.w3.org/1999/xlink'>
+            <use xlink:href="#icon-clock"></use>
+          </svg>
+          <em>Enqueued for processing</em>
+        </span>
+        <nav class="k-list-item-options">
+          <button type="button" class="k-button">
+            <span aria-hidden="true" class="k-button-icon k-icon k-icon-sendmentions-run">
+              <svg viewBox="0 0 16 16" xmlns:xlink='http://www.w3.org/1999/xlink'>
+                <use xlink:href="#icon-sendmentions-run"></use>
+              </svg>
+            </span>
+          </button>
+        </nav>
+      </li>
+
     </ul>
 
     <k-sendmentions-pagesettings>
@@ -110,6 +130,7 @@ export default {
       headline: null,
       settings: [],
       counter: [],
+      queued: null,
     }
   },
 
@@ -122,6 +143,7 @@ export default {
       this.settings                 = response.pageSettings;
       this.pageid                   = response.pageId;
       this.counter                  = this.output(response.sendmentions);
+      this.queued                   = response.queued;
     });
     this.$events.$on("page.changeStatus", this.statuschange);
     this.$events.$on("model.update", this.pagesave);
@@ -142,7 +164,10 @@ export default {
 
     statuschange() {
       this.load().then((response) => {
+        this.sendmentions             = response.sendmentions;
         this.settings                 = response.pageSettings;
+        this.queued                   = response.queued;
+        this.counter                  = this.output(response.sendmentions);
       });
       console.log('Page status changed');
     },
@@ -151,6 +176,7 @@ export default {
       this.load().then((response) => {
         this.sendmentions             = response.sendmentions;
         this.settings                 = response.pageSettings;
+        this.queued                   = response.queued;
         this.counter                  = this.output(response.sendmentions);
       });
       console.log('Page saved');
@@ -182,7 +208,22 @@ export default {
       const endpoint = `sendmentions/pagesettings/` + this.pageid.replace(/\//s, '+');
       const response = await this.$api.patch(endpoint, {key: key, value: value});
     },
-}
+
+    async triggerQueue() {
+      const endpoint = `sendmentions/` + this.pageid.replace(/\//s, '+');
+      const response = await this.$api.patch(endpoint);
+      if (response.status === 'ok') {
+        await this.load().then((response) => {
+          this.sendmentions             = response.sendmentions;
+          this.queued                   = response.queued;
+          this.counter                  = this.output(response.sendmentions);
+        });
+        this.$store.dispatch("notification/success", ":)");
+      } else {
+        this.$store.dispatch("notification/error", "Something went wrong.");
+      }
+    }
+  },
 
 }
 </script>
@@ -191,6 +232,7 @@ export default {
 .k-sendmentions-section > .k-box {
   margin-bottom: 1.5rem;
 }
+.k-sendmentions-section-queued svg,
 .k-sendmentions-section-count svg {
   width: 1rem;
   height: 1rem;

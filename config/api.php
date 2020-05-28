@@ -9,7 +9,11 @@ return [
             'pattern' => 'sendmentions/(:any)',
             'method'  => 'PATCH',
             'action'  => function (string $pageid) {
-                return SendMentions::resend($this->page($pageid), $this->requestBody());
+                if ($this->requestBody()) {
+                    return SendMentions::resend($this->page($pageid), $this->requestBody());
+                } else {
+                    return SendMentions::send($this->page($pageid), null, true);
+                }
             }
         ],
         [
