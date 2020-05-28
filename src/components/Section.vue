@@ -114,7 +114,6 @@ export default {
   },
 
   created() {
-    console.log(this.$store);
     this.load().then((response) => {
       this.headline                 = response.headline;
       this.sendmentions             = response.sendmentions;
@@ -124,6 +123,13 @@ export default {
       this.pageid                   = response.pageId;
       this.counter                  = this.output(response.sendmentions);
     });
+    this.$events.$on("page.changeStatus", this.statuschange);
+    this.$events.$on("model.update", this.pagesave);
+  },
+
+  destroyed() {
+    this.$events.$off("page.changeStatus", this.statuschange);
+    this.$events.$off("model.update", this.pagesave);
   },
 
   methods: {
@@ -134,8 +140,23 @@ export default {
       return this.$api.get(this.parent + '/sections/' + this.name);
     },
 
+    statuschange() {
+      this.load().then((response) => {
+        this.settings                 = response.pageSettings;
+      });
+      console.log('Page status changed');
+    },
+
+    pagesave() {
+      this.load().then((response) => {
+        this.sendmentions             = response.sendmentions;
+        this.settings                 = response.pageSettings;
+        this.counter                  = this.output(response.sendmentions);
+      });
+      console.log('Page saved');
+    },
+
     output(sendmentions) {
-      console.log(sendmentions);
       var counter = {mention: 0, ping: 0, none: 0, notsent: 0, archive: 0};
       Object.keys(sendmentions).forEach(function(key) {
         if(sendmentions[key].type === 'webmention') {
@@ -161,7 +182,7 @@ export default {
       const endpoint = `sendmentions/pagesettings/` + this.pageid.replace(/\//s, '+');
       const response = await this.$api.patch(endpoint, {key: key, value: value});
     },
-  }
+}
 
 }
 </script>

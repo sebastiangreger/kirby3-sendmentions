@@ -14,6 +14,11 @@ class SendMentions {
 
     public static function resend( $page, $pingdata ) {
 
+        // do not send webmentions, unless page has been published
+        if ($page->status() != 'listed') {
+            return false;
+        }
+
         // load the array of previously sent pings
         static::$log = Storage::read($page, 'sendmentions');
 
@@ -24,15 +29,15 @@ class SendMentions {
         static::logger('>>> ' . $source, false);
 
         if ($pingdata['type'] === 'archive.org') {
-            static::pingArchive($target);
+            $return = static::pingArchive($target);
         } else {
-            static::sendMention($source, $target);
+            $return = static::sendMention($source, $target);
         }
 
         // save sent pings' info in pings.json
         Storage::write($page, static::$log, 'sendmentions');
 
-        return true;
+        return $return;
     }
 
     public static function send( $newPage, $oldPage = null ) {
@@ -46,12 +51,12 @@ class SendMentions {
         }
 
         // do not send webmentions, unless "pings on update" are active
-        if ($newPage->status() == $oldPage->status() && !pageSettings($newPage, 'pingOnUpdate')) {
+        if ($newPage->status() == $oldPage->status() && !static::pageSettings($newPage, 'pingOnUpdate')) {
             return;
         }
 
         // do not send webmentions, unless "pings on publish" are active
-        if ($newPage->status() != $oldPage->status() && !pageSettings($newPage, 'pingOnPublish')) {
+        if ($newPage->status() != $oldPage->status() && !static::pageSettings($newPage, 'pingOnPublish')) {
             return;
         }
 
@@ -112,15 +117,15 @@ class SendMentions {
         Storage::write($newPage, static::$log, 'sendmentions');
     }
 
-    public static function updateLog( $target, $type, $entry = [] ) {
+     public static function updateLog( $target, $type, $entry = [] ) {
 
-		// add timestamp to the data array
+        // add timestamp to the data array
 		$entry['timestamp'] = time();
 
         // store webmention response in array
         static::$log[$target][$type] = $entry;
 
-	}
+    }
 
     public static function sendMention( $source, $target ) {
 
@@ -136,36 +141,38 @@ class SendMentions {
 
             // not sending webmentions to localhost (W3C spec 4.3)
             if (strpos($endpoint, '//localhost') === true || strpos($endpoint, '//127.0.0') === true) {
-                return;
+                return false;
             }
 
             // send webmention
             $response = $client->sendWebmention($source, $target);
 
             // store webmention response in log
-            static::updateLog($target, 'mention', [
+            $data = [
                 'type' => 'webmention',
                 'endpoint' => $endpoint,
                 'response' => $response['code'],
-            ]);
+            ];
+            static::updateLog($target, 'mention', $data);
             static::logger('Webmention sent: ' . $target . ' (' . $response['code'] . ';' . $endpoint . ')');
         }
         // as a fallback, try to send a pingback
         elseif ( $response = $client->sendPingback( $source, $target ) ) {
-			// if successful, store pingback info in log
-			static::updateLog ( $target, 'mention', [
+            // if successful, store pingback info in log
+            $data = [
                 'type' => 'pingback',
-            ]);
+            ];
+			static::updateLog ( $target, 'mention', $data);
             static::logger('Pingback sent: ' . $target);
         }
         else {
-
-			static::updateLog ( $target, 'mention', [
+            $data = [
                 'type' => 'none',
-            ]);
+            ];
+			static::updateLog ( $target, 'mention', $data);
             static::logger('No endpoint found: ' . $target);
-
         }
+        return $data;
 
 	}
 

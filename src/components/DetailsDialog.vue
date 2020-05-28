@@ -58,19 +58,21 @@ export default {
     },
 
     action(data, item) {
-      if (data === 'resend') {
-        this.resend(item.pageid, item.target, item.type);
+      if (data === 'triggerPing') {
+        this.triggerPing(item.pageid, item.target, item.type);
       }
     },
 
-    async resend(pageid, target, type) {
+    async triggerPing(pageid, target, type) {
       console.log(pageid + target + type);
       const endpoint = `sendmentions/` + pageid.replace(/\//s, '+');
-      /*
       const response = await this.$api.patch(endpoint, {target: target, type: type});
-      await this.load().then(response => this.sendmentions = response.sendmentions);
-      */
-      this.$store.dispatch("notification/success", ":)");
+      if (response.type === 'none') {
+        this.$store.dispatch("notification/error", "No endpoint found for " + target);
+      } else {
+        await this.load().then(response => this.sendmentions = response.sendmentions);
+        this.$store.dispatch("notification/success", ":)");
+      }
     },
   }
 
