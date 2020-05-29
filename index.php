@@ -31,6 +31,8 @@ load([
 
     'api' => require __DIR__ . '/config/api.php',
 
+    'routes' => require __DIR__ . '/config/routes.php',
+
     'sections' => [
         'pings' => require __DIR__ . '/sections/pings.php',
         'sendmentions' => require __DIR__ . '/sections/sendmentions.php',
