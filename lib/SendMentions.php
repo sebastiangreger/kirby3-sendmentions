@@ -48,9 +48,10 @@ class SendMentions
      */
     public static function send($newPage, $oldPage = null, $force = false)
     {
-
         // trigger a check whether old data has to be migrated
-        static::migration();
+        if (!F::exists(kirby()->root('site') . '/logs/sendmentions/sendmentions.log')) {
+            Migration::run();
+        }
 
         // do not send webmentions, unless page has been published
         if ($newPage->status() != 'listed') {
@@ -71,13 +72,13 @@ class SendMentions
             return Storage::delete($newPage, 'sendmentionqueue');
         }
 
-        // if an array of applicable templates is given, only proceed for selected templates
-        if (option('sgkirby.sendmentions.templates', []) != [] && ! in_array($newPage->intendedTemplate()->name(), option('sgkirby.sendmentions.templates', []))) {
+        // only proceed for selected templates
+        if (!in_array($newPage->intendedTemplate()->name(), option('sgkirby.sendmentions.templates'))) {
             return;
         }
 
         // if asynchronous mode is active, create queue job instead
-        if (!$force && strlen(option('sgkirby.sendmentions.secret')) >= 10) {
+        if (!$force && option('sgkirby.sendmentions.synchronous') === false) {
             Storage::write($newPage, [time()], 'sendmentionqueue');
             return;
         }
@@ -122,7 +123,7 @@ class SendMentions
             static::sendMention($source, $target);
 
             // if set in config, ping archive.org for all external links as well (default = off)
-            if (is_array(option('sgkirby.sendmentions.archiveorg', false))) {
+            if (in_array($newPage->intendedTemplate()->name(), option('sgkirby.sendmentions.archiveorg'))) {
                 static::pingArchive($target);
             }
 
@@ -248,38 +249,6 @@ class SendMentions
         }
         // otherwise return associative array
         return $settings;
-    }
-
-    public static function migration()
-    {
-        if (!F::exists(kirby()->root('site') . '/logs/sendmentions/sendmentions.log')) {
-            // loop through all pages
-            foreach (site()->index('true') as $page) {
-                $jsonfile = $page->root() . DS . '.sendmentions.json';
-                if (F::exists($jsonfile)) {
-                    $yamlfile = $page->root() . DS . '_sendmentions' . DS . 'sendmentions.yml';
-                    $data = Data::read($jsonfile, 'json');
-                    $newdata = [];
-
-                    // translate old data into new format
-                    foreach ($data as $url => $pings) {
-                        foreach ($pings as $type => $meta) {
-                            if ($type != 'archive.org') {
-                                $meta['type'] = $type;
-                                $newdata[$url]['mention'] = $meta;
-                            } else {
-                                $newdata[$url][$type] = $meta;
-                            }
-                        }
-                    }
-
-                    // write new yaml file and delete old json file
-                    Data::write($yamlfile, $newdata, 'yml');
-                    unlink($jsonfile);
-                    static::logger('>>> old JSON data migrated to YAML', false);
-                }
-            }
-        }
     }
 
     // Log file writer

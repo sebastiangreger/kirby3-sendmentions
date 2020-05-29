@@ -21,7 +21,7 @@
       />
     </k-box>
 
-    <ul class="k-list">
+    <ul class="k-list" v-if="!sendmentionsSystemErrors || !sendmentionsSystemErrors['template-not-active']">
 
       <li class="k-list-item" @click="details()">
         <span class="k-list-item-text k-sendmentions-section-count">
@@ -61,7 +61,7 @@
         </nav>
       </li>
 
-      <li class="k-list-item" v-if="queued" @click="triggerQueue">
+      <li class="k-list-item" :class="triggered" v-if="queued" @click="triggerQueue">
         <span class="k-list-item-text k-sendmentions-section-queued">
           <svg viewBox="0 0 16 16" xmlns:xlink='http://www.w3.org/1999/xlink'>
             <use xlink:href="#icon-clock"></use>
@@ -70,9 +70,14 @@
         </span>
         <nav class="k-list-item-options">
           <button type="button" class="k-button">
-            <span aria-hidden="true" class="k-button-icon k-icon k-icon-sendmentions-run">
+            <span v-if="triggered === null" aria-hidden="true" class="k-button-icon k-icon k-icon-sendmentions-run">
               <svg viewBox="0 0 16 16" xmlns:xlink='http://www.w3.org/1999/xlink'>
                 <use xlink:href="#icon-sendmentions-run"></use>
+              </svg>
+            </span>
+            <span v-else aria-hidden="true" class="k-button-icon k-icon k-icon-refresh">
+              <svg viewBox="0 0 16 16" xmlns:xlink='http://www.w3.org/1999/xlink'>
+                <use xlink:href="#icon-refresh"></use>
               </svg>
             </span>
           </button>
@@ -81,7 +86,7 @@
 
     </ul>
 
-    <k-sendmentions-pagesettings>
+    <k-sendmentions-pagesettings v-if="!sendmentionsSystemErrors || !sendmentionsSystemErrors['template-not-active']">
       <k-sendmentions-pagesettingstoggle
         v-for="setting in settings"
         :key="setting.id"
@@ -125,6 +130,7 @@ export default {
       settings: [],
       counter: [],
       queued: null,
+      triggered: null,
     }
   },
 
@@ -202,6 +208,7 @@ export default {
     },
 
     async triggerQueue() {
+      this.triggered = 'triggered';
       const endpoint = `sendmentions/` + this.pageid.replace(/\//s, '+');
       const response = await this.$api.patch(endpoint);
       if (response.status === 'ok') {
@@ -214,6 +221,7 @@ export default {
       } else {
         this.$store.dispatch("notification/error", "Something went wrong.");
       }
+      this.triggered = null;
     }
   },
 
@@ -231,5 +239,19 @@ export default {
   -moz-transform: scale(1);
   opacity:.33;
   margin-right:.2rem;
+}
+.k-list-item.triggered {
+  background:#fffecd;
+}
+.k-list-item.triggered .k-button svg {
+  animation: rotation 4s infinite linear;
+}
+@keyframes rotation {
+  from {
+    transform: rotate(359deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
 }
 </style>

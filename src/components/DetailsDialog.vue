@@ -59,19 +59,30 @@ export default {
 
     action(data, item) {
       if (data === 'triggerPing') {
-        this.triggerPing(item.pageid, item.target, item.type);
+        if (item.type=='triggered') {
+          return;
+        }
+        this.triggerPing(item);
       }
     },
 
-    async triggerPing(pageid, target, type) {
-      console.log(pageid + target + type);
+    async triggerPing(item) {
+      console.log(item.pageid + item.target + type);
+      const type = item.type;
+      const target = item.target;
+      const pageid = item.pageid;
+      item.type = 'triggered';
       const endpoint = `sendmentions/` + pageid.replace(/\//s, '+');
       const response = await this.$api.patch(endpoint, {target: target, type: type});
       if (response.type === 'none') {
         this.$store.dispatch("notification/error", "No endpoint found for " + target);
+        item.type = response.type;
+      } else if (response.type === 'webmention' && response.response === null) {
+        this.$store.dispatch("notification/error", "Target endpoint does not accept webmentions for " + target);
+        item.type = response.type;
       } else {
-        await this.load().then(response => this.sendmentions = response.sendmentions);
         this.$store.dispatch("notification/success", ":)");
+        item.type = response.type;
       }
     },
   }

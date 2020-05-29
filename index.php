@@ -14,7 +14,9 @@ namespace sgkirby\SendMentions;
 
 load([
     'sgkirby\\SendMentions\\SendMentions' => 'lib/SendMentions.php',
-    'sgkirby\\SendMentions\\Storage' => 'lib/Storage.php'
+    'sgkirby\\SendMentions\\Storage'      => 'lib/Storage.php',
+    'sgkirby\\SendMentions\\Cron'         => 'lib/Cron.php',
+    'sgkirby\\SendMentions\\Migration'    => 'lib/Migration.php'
 ], __DIR__);
 
 \Kirby::plugin('sgkirby/sendmentions', [
@@ -22,6 +24,9 @@ load([
     'options' => [
         'pingOnPublish'       => false,
         'pingOnUpdate'        => false,
+        'synchronous'         => false,
+        'templates'           => [],
+        'archiveorg'          => [],
     ],
 
     'api' => require __DIR__ . '/config/api.php',

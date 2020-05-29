@@ -1,12 +1,13 @@
 /* global panel */
 
 import Section from './components/Section.vue';
+import Deprecated from './components/Deprecated.vue';
 
 panel.plugin('sgkirby/sendmentions', {
 
   sections: {
     sendmentions: Section,
-    pings: Section,
+    pings: Deprecated,
   },
 
   icons: {

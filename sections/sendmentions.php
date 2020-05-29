@@ -24,11 +24,21 @@ return [
 
             // run a check whether there is unmigrated data, but do not output anything
             if (!F::exists(kirby()->root('site') . '/logs/sendmentions/sendmentions.log')) {
-                SendMentions::migration();
+                Migration::run();
+            }
+
+            $errors = [];
+
+            if (!in_array($this->model()->intendedTemplate()->name(), option('sgkirby.sendmentions.templates'))) {
+                $errors['template-not-active'] = [
+                    'id'      => 'template-not-active',
+                    'message' => '<strong>Setup issue:</strong> The Commentions plugin is not configured as active for this template. Check the <a href="https://github.com/sebastiangreger/kirby3-sendmentions" target="_blank">Readme</a> for the required setup.',
+                    'theme'   => 'negative',
+                ];
             }
 
             // for now, always return an empty error array
-            return [];
+            return $errors;
         },
 
         'pageId' => function () {

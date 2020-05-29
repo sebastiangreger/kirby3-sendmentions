@@ -18,6 +18,9 @@ class Cron
         $secret = option('sgkirby.sendmentions.secret');
 
         // validation with actionable error messages
+        if (option('sgkirby.sendmentions.synchronous') === true) {
+            return new Response('<p>Error: Plugin configured for synchronous notifications; queue/cron disabled.</p>', 'text/html', 500);
+        }
         if (!get('token')) {
             return new Response('<p>Error: Token attribute missing from URL or empty.</p>', 'text/html', 403);
         }

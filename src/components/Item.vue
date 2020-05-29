@@ -23,7 +23,7 @@
       <k-button
         :tooltip="$t('send')"
         :icon="buttonicon"
-        :alt="Send"
+        :alt=" Send"
         @click.stop="$emit('action', 'triggerPing', item)"
       />
     </nav>
@@ -50,22 +50,27 @@ export default {
         return this.item.target;
     },
     itemclass() {
-      if (this.item.type == 'archive.org') {
+      if (this.item.type == 'triggered') {
+        return 'k-list-item-sendmentions-triggered';
+      } else if (this.item.type == 'archive.org') {
         return 'k-list-item-sendmentions-sent k-list-item-sendmentions-archiveorg';
-      } else if (this.item.type == 'pingback' || this.item.type == 'webmention') {
-        return 'k-list-item-sendmentions-sent';
-      } else {
+      } else if (this.item.type == 'none' || this.item.data.response === null) {
         return 'k-list-item-sendmentions-failed';
+      } else {
+        return 'k-list-item-sendmentions-sent';
       }
     },
     type_formatted() {
       switch (this.item.type) {
+        case 'triggered':
+          return '';
         case 'none':
           return 'no endpoint';
-        case 'webmention':
-          return this.item.type + ' (' + this.item.data.response + ')';
-        default:
+        case 'pingback':
+        case 'archive.org':
           return this.item.type;
+        default:
+          return this.item.type + ' (' + this.item.data.response + ')';
       }
     },
     buttonicon() {
@@ -76,16 +81,16 @@ export default {
     },
     icon() {
       switch (this.item.type) {
-        case 'webmention':
-            return 'sendmentions-webmention';
         case 'pingback':
             return 'globe';
         case 'archive.org':
             return 'sendmentions-archiveorg';
         case 'none':
             return 'cancel';
+        case 'triggered':
+            return '';
         default:
-            return 'circle-outline';
+            return 'sendmentions-webmention';
       }
     },
   },
@@ -97,4 +102,14 @@ export default {
 .k-list-item-sendmentions-sent .k-list-item-image .k-icon svg * { fill:#5d800d; }
 .k-list-item-sendmentions-failed .k-list-item-image .k-icon svg * { fill:#c82829; }
 .k-list-item-sendmentions-archiveorg .k-list-item-text small { margin-right:2.5rem; }
+.k-list-item-sendmentions-triggered { background:#fffecd; }
+.k-list-item-sendmentions-triggered .k-button-icon svg { animation: rotation 4s infinite linear; }
+@keyframes rotation {
+  from {
+    transform: rotate(359deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
 </style>
