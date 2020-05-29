@@ -31,12 +31,15 @@ Download and copy this repository to `/site/plugins/kirby3-sendmentions`.
 The plugin has to be activated for specific template types by defining their names in `site/config/config.php` as follows:
 
 ```php
+// the templates that sending pings should be allowed for
 'sgkirby.sendmentions.templates' => ['default', 'note'],
 ```
 
 If you want to also send the optional archivation requests to archive.org, set up the applicable template names in similar manner (this currently only works for templates the plugin has been activated for):
 
 ```php
+// the templates that should request links to be archived
+// (has to be a subset of those in the .templates setting)
 'sgkirby.sendmentions.archiveorg' => ['default', 'note'],
 ```
 
@@ -51,7 +54,9 @@ sections:
 By default, publishing or updating a page (of a template type that the plugin has been activated for) does not automatically trigger the sending of notifications. Instead, "ping on publish" and "ping on update" can be activated for every page individually. To change the global default - i.e. auto-trigger the notifications for all templates (and allow to deactivate them individually) - set one or both of the following variables to `true`:
 
 ```php
+// sets default to: send pings on page publication unless disabled for a page
 'sgkirby.sendmentions.pingOnPublish' => true,
+// sets default to: send pings on page update unless disabled for a page
 'sgkirby.sendmentions.pingOnUpdate' => true,
 ```
 
@@ -60,6 +65,7 @@ Sending webmentions and pingbacks at the time of publishing/updating a page lead
 The secret token key is set up using the following config variable; it has to consist of at least 10 alphanumeric characters and may NOT include any of the following: `&` `%` `#` `+` nor a space sign ` `:
 
 ```php
+// the token to protect the cronjob target
 'sgkirby.sendmentions.secret' => '<YOUR-SECRET>',
 ```
 
@@ -68,12 +74,15 @@ _N.B. Any attempt to trigger the queue process before you set a valid secret in 
 For the time being, the plugin still supports setting up the synchronous sending of notifications (this will likely be removed in a later version). This is strongly discouraged due to the poor user experience, but you may disable the asynchronous queue and cronjob setup by setting this variable:
 
 ```php
+// disables the cronjob queue and sends pings instantly instead
+// (causes long delays in panel UI; not recommended and soon to be removed)
 'sgkirby.sendmentions.synchronous' => true,
 ```
 
 In case your site uses virtual pages: If virtual pages are not created through the Kirby panel (e.g. virtual pages generated from a database or CSV file), the sending of webmentions needs to be triggered separately by calling this function with the according Kirby Page object as variable:
 
 ```php
+// triggering the enqueue/send process for a Page object
 \sgkirby\SendMentions\SendMentions::send($page);
 ```
 
