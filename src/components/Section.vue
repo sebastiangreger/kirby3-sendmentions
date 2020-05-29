@@ -208,7 +208,7 @@ export default {
       const target = item.target;
       const pageid = item.pageid;
       item.type = 'triggered';
-      const endpoint = `sendmentions/` + pageid.replace(/\//s, '+');
+      const endpoint = `sendmentions/` + pageid.replace(/\//g, '+');
       const response = await this.$api.patch(endpoint, {target: target, type: type});
       if (response.type === 'none') {
         this.$store.dispatch("notification/error", "No endpoint found for " + target);
@@ -225,13 +225,13 @@ export default {
     },
 
     async changePageSetting(key, value) {
-      const endpoint = `sendmentions/pagesettings/` + this.pageid.replace(/\//s, '+');
+      const endpoint = `sendmentions/pagesettings/` + this.pageid.replace(/\//g, '+');
       const response = await this.$api.patch(endpoint, {key: key, value: value});
     },
 
     async triggerQueue() {
       this.triggered = 'triggered';
-      const endpoint = `sendmentions/` + this.pageid.replace(/\//s, '+');
+      const endpoint = `sendmentions/` + this.pageid.replace(/\//g, '+');
       const response = await this.$api.patch(endpoint);
       if (response.status === 'ok') {
         await this.load().then((response) => {
