@@ -202,6 +202,28 @@ export default {
       this.$refs.details.open(this.sendmentions, this.empty);
     },
 
+    async triggerPing(item) {
+      console.log(item.pageid + item.target + type);
+      const type = item.type;
+      const target = item.target;
+      const pageid = item.pageid;
+      item.type = 'triggered';
+      const endpoint = `sendmentions/` + pageid.replace(/\//s, '+');
+      const response = await this.$api.patch(endpoint, {target: target, type: type});
+      if (response.type === 'none') {
+        this.$store.dispatch("notification/error", "No endpoint found for " + target);
+      } else if (response.type === 'webmention' && response.response === null) {
+        this.$store.dispatch("notification/error", "Target endpoint does not accept webmentions for " + target);
+      } else {
+        this.$store.dispatch("notification/success", ":)");
+      }
+      await this.load().then((response) => {
+        this.sendmentions               = response.sendmentions;
+        this.$refs.details.sendmentions = response.sendmentions;
+        this.counter                    = this.output(response.sendmentions);
+      });
+    },
+
     async changePageSetting(key, value) {
       const endpoint = `sendmentions/pagesettings/` + this.pageid.replace(/\//s, '+');
       const response = await this.$api.patch(endpoint, {key: key, value: value});
