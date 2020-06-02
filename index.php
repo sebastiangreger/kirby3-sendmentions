@@ -5,7 +5,7 @@ namespace sgkirby\SendMentions;
 /**
  * Kirby 3 Sendmentions Plugin
  *
- * @version   1.0.0-beta.1
+ * @version   1.0-beta.1
  * @author    Sebastian Greger <msg@sebastiangreger.net>
  * @copyright Sebastian Greger <msg@sebastiangreger.net>
  * @link      https://github.com/sebastiangreger/kirby3-sendmentions
