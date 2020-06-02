@@ -76,17 +76,19 @@ export default {
     buttonicon() {
       if (this.item.type === 'archive.org') {
         return '';
+      } else if (this.item.type === 'triggered') {
+        return 'loader';
       }
       return 'refresh';
     },
     icon() {
       switch (this.item.type) {
         case 'pingback':
-            return 'globe';
+            return 'sendmentions-ok';
         case 'archive.org':
             return 'sendmentions-archiveorg';
         case 'none':
-            return 'cancel';
+            return 'sendmentions-failed';
         case 'triggered':
             return '';
         default:
@@ -106,10 +108,10 @@ export default {
 .k-list-item-sendmentions-triggered .k-button-icon svg { animation: rotation 4s infinite linear; }
 @keyframes rotation {
   from {
-    transform: rotate(359deg);
+    transform: rotate(0deg);
   }
   to {
-    transform: rotate(0deg);
+    transform: rotate(359deg);
   }
 }
 </style>

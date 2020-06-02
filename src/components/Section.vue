@@ -33,13 +33,13 @@
           </em>
           <em>
             <svg viewBox="0 0 16 16" xmlns:xlink='http://www.w3.org/1999/xlink'>
-              <use xlink:href="#icon-globe"></use>
+              <use xlink:href="#icon-sendmentions-ok"></use>
             </svg>
             {{ counter.ping }}
           </em>
           <em>
             <svg viewBox="0 0 16 16" xmlns:xlink='http://www.w3.org/1999/xlink'>
-              <use xlink:href="#icon-cancel"></use>
+              <use xlink:href="#icon-sendmentions-failed"></use>
             </svg>
             {{ counter.none }}
           </em>
@@ -75,9 +75,9 @@
                 <use xlink:href="#icon-sendmentions-run"></use>
               </svg>
             </span>
-            <span v-else aria-hidden="true" class="k-button-icon k-icon k-icon-refresh">
+            <span v-else aria-hidden="true" class="k-button-icon k-icon k-icon-loader">
               <svg viewBox="0 0 16 16" xmlns:xlink='http://www.w3.org/1999/xlink'>
-                <use xlink:href="#icon-refresh"></use>
+                <use xlink:href="#icon-loader"></use>
               </svg>
             </span>
           </button>
@@ -270,10 +270,10 @@ export default {
 }
 @keyframes rotation {
   from {
-    transform: rotate(359deg);
+    transform: rotate(0deg);
   }
   to {
-    transform: rotate(0deg);
+    transform: rotate(359deg);
   }
 }
 </style>
