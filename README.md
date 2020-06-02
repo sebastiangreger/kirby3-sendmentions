@@ -43,13 +43,21 @@ If you want to also send the optional archivation requests to archive.org, set u
 'sgkirby.sendmentions.archiveorg' => ['default', 'note'],
 ```
 
-To display and manage the sending of mentions for a page in the Panel, add the following to the according blueprint in `site/blueprints/pages`:
+To display and manage the sending of mentions for a page in the Panel (technically optional, but highly recommended for better control), add the following to the according blueprint in `site/blueprints/pages`:
 
 ```yaml
 sections:
   sendmentions:
     type: sendmentions
 ```
+
+The panel section presents a small counter of sent mentions (from left to right: successfully sent webmentions, sent pingbacks, sites with no compatible enpoint, links archived on archive.org) as well as a switch to override the default setting whether pings are sent on publish/update or not:
+
+![form](.github/section.png)
+
+Clicking on the cog wheel icon opens a dialog field that provides a detailed list of sent pings; while clicking on an archived item leads to the archived copy on archive.org, notifications to webmention/pingback targets can be retriggered by clicking the refresh icon:
+
+![form](.github/dialog.png)
 
 By default, publishing or updating a page (of a template type that the plugin has been activated for) does not automatically trigger the sending of notifications. Instead, "ping on publish" and "ping on update" can be activated for every page individually. To change the global default - i.e. auto-trigger the notifications for all templates (and allow to deactivate them individually) - set one or both of the following variables to `true`:
 
