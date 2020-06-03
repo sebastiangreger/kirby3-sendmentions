@@ -66,7 +66,7 @@ class Cron
         foreach (site()->index() as $page) {
             // if page is queued for sending pings, rund the regular send routine
             if (F::exists(Storage::file($page, 'sendmentionqueue'))) {
-                SendMentions::send($page);
+                SendMentions::send($page, null, true);
             }
         }
 

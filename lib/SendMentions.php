@@ -209,16 +209,21 @@ class SendMentions
             static::updateLog($target, 'archive.org', [
                 'url' => (string)$archiveInfo['archived_snapshots']['closest']['url'],
             ]);
+            static::logger('Already exists on archive.org: ' . $target);
 
         // otherwise send a save request
         } elseif ($archiveResponse = F::read($archiveSubmitURL)) {
 
             // if successful, store archive URL in log
-            static::updateLog($target, 'archive.org', [
-                'url' => (string)'https://web.archive.org' . $archiveResponse['headers']['content-location'],
-            ]);
+            if (isset($archiveResponse['headers']['content-location'])) {
+                static::updateLog($target, 'archive.org', [
+                    'url' => (string)'https://web.archive.org' . $archiveResponse['headers']['content-location'],
+                ]);
+                static::logger('Saved to archive.org: ' . $target);
+            } else {
+                static::logger('Invalid Response from archive.org: ' . $target);
+            }
         }
-        static::logger('Saved to archive.org: ' . $target);
     }
 
     public static function parseUrls($newPage)
