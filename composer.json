@@ -1,7 +1,7 @@
 {
     "name": "sgkirby/sendmentions",
     "description": "Send webmentions and pingbacks to URLs in content",
-    "version": "1.0-beta.1",
+    "version": "1.0.0-beta.2",
     "type": "kirby-plugin",
     "license": "MIT",
     "authors": [
