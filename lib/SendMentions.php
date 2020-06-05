@@ -212,17 +212,37 @@ class SendMentions
             static::logger('Already exists on archive.org: ' . $target);
 
         // otherwise send a save request
-        } elseif ($archiveResponse = F::read($archiveSubmitURL)) {
+        } else {
 
-            // if successful, store archive URL in log
-            if (isset($archiveResponse['headers']['content-location'])) {
-                static::updateLog($target, 'archive.org', [
-                    'url' => (string)'https://web.archive.org' . $archiveResponse['headers']['content-location'],
-                ]);
-                static::logger('Saved to archive.org: ' . $target);
-            } else {
-                static::logger('Invalid Response from archive.org: ' . $target);
+            try {
+                $archiveResponse = Remote::get(
+                    $archiveSubmitURL,
+                    [
+                        'timeout' => 30,
+                        'agent' => 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:74.0) Gecko/20100101 Firefox/74.0'
+                    ]
+                );
+            } catch (Exception $e) {
+                static::logger('Error polling archive.org: ' . $target . ' (' . $e . ')');
             }
+            $archiveResponseHeaders = $archiveResponse->headers();
+            if (!empty($archiveResponseHeaders)) {
+                // if successful, store archive URL in log
+                if (!empty($archiveResponseHeaders['Content-Location'])) {
+                    static::updateLog($target, 'archive.org', [
+                        'url' => (string)'https://web.archive.org' . $archiveResponseHeaders['Content-Location'],
+                    ]);
+                    static::logger('Saved to archive.org: ' . $target);
+                } elseif (! empty($archiveResponseHeaders['X-Archive-Wayback-Runtime-Error'])) {
+                    static::logger('Error from archive.org: ' . $target . ' (' . $archiveResponseHeaders['X-Archive-Wayback-Runtime-Error'] . ')');
+                } else {
+                    // TODO: use $archiveResponse['errorMessage'] instead (not stable)
+                    static::logger('Error from archive.org: ' . $target . ' (unspecified)');
+                }
+            } else {
+                static::logger('No response from archive.org: ' . $target);
+            }
+
         }
     }
 
