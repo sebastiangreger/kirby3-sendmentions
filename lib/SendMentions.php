@@ -3,6 +3,7 @@
 namespace sgkirby\SendMentions;
 
 use Kirby\Data\Data;
+use Kirby\Http\Remote;
 use Kirby\Toolkit\F;
 use Kirby\Toolkit\V;
 
@@ -107,24 +108,26 @@ class SendMentions
                 continue;
             }
 
-            // do not process URLs already pinged before
-            if (isset(static::$log[ $target ])) {
-                static::logger('URL already pinged earlier: ' . $target);
-                continue;
-            }
-
             // do not process URLs already processed in this run
             if (in_array($target, static::$triggered)) {
                 static::logger('URL duplicate within page: ' . $target);
                 continue;
             }
 
-            // send webmentions/pingbacks
-            static::sendMention($source, $target);
+            // send webmentions/pingbacks unless URL already pinged before
+            if (!isset(static::$log[$target]['mention'])) {
+                static::sendMention($source, $target);
+            } else {
+                static::logger('URL already pinged earlier: ' . $target);
+            }
 
             // if set in config, ping archive.org for all external links as well (default = off)
             if (in_array($newPage->intendedTemplate()->name(), option('sgkirby.sendmentions.archiveorg'))) {
-                static::pingArchive($target);
+                if (!isset(static::$log[$target]['archive.org'])) {
+                    static::pingArchive($target);
+                } else {
+                    static::logger('URL already sent to archive earlier: ' . $target);
+                }
             }
 
             // mark this URL as processed (independent of success/failure), to avoid double pings
