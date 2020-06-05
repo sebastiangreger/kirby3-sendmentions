@@ -191,7 +191,7 @@ export default {
           counter.ping++;
         } else if(sendmentions[key].type === 'none') {
           counter.none++;
-        } else if(sendmentions[key].type === 'archive.org') {
+        } else if(sendmentions[key].type === 'archive.org' && sendmentions[key].url != '') {
           counter.archive++;
         }
       });

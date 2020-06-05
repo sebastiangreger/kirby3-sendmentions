@@ -226,6 +226,10 @@ class SendMentions
                     ]
                 );
             } catch (Exception $e) {
+                static::updateLog($target, 'archive.org', [
+                    'url' => '',
+                    'error' => $e ?? 'request failed',
+                ]);
                 static::logger('Error polling archive.org: ' . $target . ' (' . $e . ')');
             }
             $archiveResponseHeaders = $archiveResponse->headers();
@@ -236,13 +240,24 @@ class SendMentions
                         'url' => (string)'https://web.archive.org' . $archiveResponseHeaders['Content-Location'],
                     ]);
                     static::logger('Saved to archive.org: ' . $target);
-                } elseif (! empty($archiveResponseHeaders['X-Archive-Wayback-Runtime-Error'])) {
+                } elseif (!empty($archiveResponseHeaders['X-Archive-Wayback-Runtime-Error'])) {
+                    static::updateLog($target, 'archive.org', [
+                        'url' => '',
+                        'error' => $archiveResponseHeaders['X-Archive-Wayback-Runtime-Error'],
+                    ]);
                     static::logger('Error from archive.org: ' . $target . ' (' . $archiveResponseHeaders['X-Archive-Wayback-Runtime-Error'] . ')');
                 } else {
-                    // TODO: use $archiveResponse['errorMessage'] instead (not stable)
-                    static::logger('Error from archive.org: ' . $target . ' (unspecified)');
+                    static::updateLog($target, 'archive.org', [
+                        'url' => '',
+                        'error' => $archiveResponse['errorMessage'] ?? 'unspecified',
+                    ]);
+                    static::logger('Error from archive.org: ' . $target . ' (' . ($archiveResponse['errorMessage'] ?? 'unspecified') . ')');
                 }
             } else {
+                static::updateLog($target, 'archive.org', [
+                    'url' => '',
+                    'error' => 'empty response headers',
+                ]);
                 static::logger('No response from archive.org: ' . $target);
             }
 

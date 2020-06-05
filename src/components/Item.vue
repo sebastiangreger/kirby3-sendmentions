@@ -52,8 +52,10 @@ export default {
     itemclass() {
       if (this.item.type == 'triggered') {
         return 'k-list-item-sendmentions-triggered';
-      } else if (this.item.type == 'archive.org') {
+      } else if (this.item.type == 'archive.org' && this.item.data.url != '') {
         return 'k-list-item-sendmentions-sent k-list-item-sendmentions-archiveorg';
+      } else if (this.item.type == 'archive.org') {
+        return 'k-list-item-sendmentions-failed k-list-item-sendmentions-archiveorg';
       } else if (this.item.type == 'none' || this.item.data.response === null) {
         return 'k-list-item-sendmentions-failed';
       } else {
@@ -68,7 +70,11 @@ export default {
           return 'no endpoint';
         case 'pingback':
         case 'archive.org':
-          return this.item.type;
+          if (this.item.data.url != '') {
+            return this.item.type;
+          } else {
+            return this.item.type + ' (error)';
+          }
         default:
           return this.item.type + ' (' + this.item.data.response + ')';
       }
