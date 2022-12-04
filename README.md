@@ -1,3 +1,5 @@
+🛑 This project has been archived and is **no longer maintained**. Feel free to fork it or build something awesome on top of it – it's MIT-licensed, so you're pretty free to do whatever you fancy. As-is, the archived version has not been tested beyond Kirby 3.3; it probably has severe issues beyond version 3.5 and likely won't work with PHP 8.
+
 # Kirby 3 Sendmentions
 
 The plugin can be set up to send [Webmentions](https://www.w3.org/TR/webmention/) to all URLs linked from a page's content. This notifies the receiving sites that they have been linked to, and allows them to display these, if desired. If the target site does not provide a webmention endpoint, sending a pingback is attempted instead. As an additional option, the plugin can also request all linked pages to be archived on archive.org (option disabled by default; see [Options](#saving-linked-pages-to-archiveorg) below).
